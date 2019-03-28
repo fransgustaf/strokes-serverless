@@ -1,0 +1,16 @@
+"input": {
+  "Type": "AWS::Lambda::Function",
+  "Properties": {
+    "Handler": "lambda_function.lambda_handler",
+    "Role": { "Fn::GetAtt" : ["serverlessRole", "Arn"] },
+    "Code": {
+      "S3Bucket": "fs-deploy-lambda-functions",
+      "S3Key": "input.zip"
+    },
+    "Runtime": "python2.7",
+    "Timeout": 25,
+    "TracingConfig": {
+      "Mode": "Active"
+   }
+  }
+}
