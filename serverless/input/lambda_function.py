@@ -5,7 +5,7 @@ import boto3
 import sys
 
 import sys, os
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'shared_files'))
+sys.path.append(os.path.join(os.path.dirname(__file__), './', 'shared_files'))
 import django_setup
 from django.db import models
 from strokes.models import *
@@ -21,7 +21,7 @@ def lambda_handler(event, context):
 	document = save_document(event)
 
 	return {
-		'document_id' : document_id
+		'document_id' : document.id
 	}
 
 def save_document(data):

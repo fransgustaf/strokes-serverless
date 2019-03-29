@@ -1,0 +1,81 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Recogniser and Input
+
+  Sam Template for Recogniser and Input apps
+
+  '
+Globals:
+  Function:
+    Timeout: 3
+Outputs:
+  InputApi:
+    Description: API Gateway endpoint URL for Prod stage for MyScript function
+    Value:
+      Fn::Sub: https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/Input/
+  InputFunction:
+    Description: Input Lambda Function ARN
+    Value:
+      Fn::GetAtt:
+      - InputFunction
+      - Arn
+  InputFunctionIamRole:
+    Description: Implicit IAM Role created for Input function
+    Value:
+      Fn::GetAtt:
+      - InputFunctionRole
+      - Arn
+  RecogniserApi:
+    Description: API Gateway endpoint URL for Prod stage for Recogniser function
+    Value:
+      Fn::Sub: https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/Recogniser/
+  RecogniserFunction:
+    Description: Recogniser Lambda Function ARN
+    Value:
+      Fn::GetAtt:
+      - RecogniserFunction
+      - Arn
+  RecogniserFunctionIamRole:
+    Description: Implicit IAM Role created for Recogniser function
+    Value:
+      Fn::GetAtt:
+      - RecogniserFunctionRole
+      - Arn
+Resources:
+  InputFunction:
+    Properties:
+      CodeUri: s3://fs-deploy-lambda-functions/5295ab7c7f5d78f6e1736ad4d1f91cae
+      Events:
+        Input:
+          Properties:
+            Method: post
+            Path: /input
+          Type: Api
+      Handler: lambda_function.lambda_handler
+      Layers:
+      - Ref: SharedFiles
+      Runtime: python2.7
+    Type: AWS::Serverless::Function
+  RecogniserFunction:
+    Properties:
+      CodeUri: s3://fs-deploy-lambda-functions/d0dbb5ac54255a87af25c4b73967ef62
+      Events:
+        Recogniser:
+          Properties:
+            Method: post
+            Path: /recogniser
+          Type: Api
+      Handler: lambda_function.lambda_handler
+      Layers:
+      - Ref: SharedFiles
+      Runtime: python2.7
+    Type: AWS::Serverless::Function
+  SharedFiles:
+    Properties:
+      CompatibleRuntimes:
+      - python2.7
+      ContentUri: s3://fs-deploy-lambda-functions/a12a876105ef572164d2207bf265ec19
+      Description: Shared files like models.py
+      LayerName: SharedFiles
+      RetentionPolicy: Retain
+    Type: AWS::Serverless::LayerVersion
+Transform: AWS::Serverless-2016-10-31

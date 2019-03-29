@@ -1,0 +1,74 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Recogniser and Input
+
+  Sam Template for Recogniser and Input apps
+
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Timeout: 3
+
+Resources:
+  RecogniserFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: recogniser/
+      Handler: lambda_function.lambda_handler
+      Runtime: python2.7
+      Layers:
+      - !Ref SharedFiles
+      Events:
+        Recogniser:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /recogniser
+            Method: post
+
+  InputFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: input/
+      Handler: lambda_function.lambda_handler
+      Runtime: python2.7
+      Layers:
+      - !Ref SharedFiles
+      Events:
+        Input:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /input
+            Method: post
+
+  SharedFiles:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+        LayerName: SharedFiles
+        Description: Shared files like models.py
+        ContentUri: shared_files/
+        CompatibleRuntimes:
+            - python2.7
+        RetentionPolicy: Retain
+
+Outputs:
+  # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
+  RecogniserApi:
+    Description: "API Gateway endpoint URL for Prod stage for Recogniser function"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/Recogniser/"
+  RecogniserFunction:
+    Description: "Recogniser Lambda Function ARN"
+    Value: !GetAtt RecogniserFunction.Arn
+  RecogniserFunctionIamRole:
+    Description: "Implicit IAM Role created for Recogniser function"
+    Value: !GetAtt RecogniserFunctionRole.Arn
+
+  InputApi:
+    Description: "API Gateway endpoint URL for Prod stage for MyScript function"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/Input/"
+  InputFunction:
+    Description: "Input Lambda Function ARN"
+    Value: !GetAtt InputFunction.Arn
+  InputFunctionIamRole:
+    Description: "Implicit IAM Role created for Input function"
+    Value: !GetAtt InputFunctionRole.Arn
