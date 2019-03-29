@@ -2,8 +2,6 @@ from __future__ import print_function
 import json
 import boto3
 
-import sys
-
 import sys, os
 sys.path.append(os.path.join(os.path.dirname(__file__), './', 'shared_files'))
 import django_setup
@@ -11,23 +9,25 @@ from django.db import models
 from strokes.models import *
 
 def lambda_handler(event, context):
-	#client = boto3.client('lambda', "ap-southeast-1")
-	#client.invoke_async(
-	#	FunctionName="myscript",
-	#	InvokeArgs=json.dumps(event)
-	#)
-	
-	#print('got event{}'.format(json.dumps(event)))
-	document = save_document(event)
+	print('got event{}'.format(json.dumps(event)))
+	document = save_document(json.loads(event['body']))
+
+	client = boto3.client('lambda', "ap-southeast-1")
+	arguments = json.dumps({"body": json.dumps({"documentId": document.id})})
+
+	print(arguments)
+	client.invoke_async(
+		FunctionName="serverless-RecogniserFunction-UFX25TZHAO33",
+		InvokeArgs= arguments
+	)
 
 	return {
-		'document_id' : document.id
+	'statusCode': 200,
+	'body': document.id
 	}
 
-def save_document(data):
+def save_document(input_document):
 	import datetime, time
-
-	input_document = data
 
 	document_setting_id = input_document['documentSettingId']
 

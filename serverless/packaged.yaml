@@ -43,7 +43,7 @@ Outputs:
 Resources:
   InputFunction:
     Properties:
-      CodeUri: s3://fs-deploy-lambda-functions/5295ab7c7f5d78f6e1736ad4d1f91cae
+      CodeUri: s3://fs-deploy-lambda-functions/96a92def99ffa7101f53eb9b9a440408
       Events:
         Input:
           Properties:
@@ -57,7 +57,7 @@ Resources:
     Type: AWS::Serverless::Function
   RecogniserFunction:
     Properties:
-      CodeUri: s3://fs-deploy-lambda-functions/d0dbb5ac54255a87af25c4b73967ef62
+      CodeUri: s3://fs-deploy-lambda-functions/ed8160bdbb14c10e8728022dad5801a6
       Events:
         Recogniser:
           Properties:
@@ -73,7 +73,7 @@ Resources:
     Properties:
       CompatibleRuntimes:
       - python2.7
-      ContentUri: s3://fs-deploy-lambda-functions/a12a876105ef572164d2207bf265ec19
+      ContentUri: s3://fs-deploy-lambda-functions/844d57a5ce43332f2073b6bcadf84377
       Description: Shared files like models.py
       LayerName: SharedFiles
       RetentionPolicy: Retain
