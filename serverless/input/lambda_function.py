@@ -1,9 +1,9 @@
-from __future__ import print_function
 import json
 import boto3
 
 import sys, os
 sys.path.append(os.path.join(os.path.dirname(__file__), './', 'shared_files'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '/opt'))
 import django_setup
 from django.db import models
 from strokes.models import *
