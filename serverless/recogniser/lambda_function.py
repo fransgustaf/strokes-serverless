@@ -15,7 +15,8 @@ application_key = "4443cea5-ada7-4d9f-be9b-6d68f530d2e1"
 # Multi part only works in Python 2.7 for some reason. Take care of when rerdoing multipart section properly.
 
 def lambda_handler(event, context):
-	print('got event{}'.format(event))
+	print('got event{}'.format(json.dumps(event)))
+	#print('got context{}'.format(json.dumps(context)))
 	document_id = json.loads(event['body'])['documentId']
 	run_recognitions(document_id)
 

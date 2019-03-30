@@ -10,21 +10,36 @@ from strokes.models import *
 
 def lambda_handler(event, context):
 	print('got event{}'.format(json.dumps(event)))
-	document = save_document(json.loads(event['body']))
+	#print('got context{}'.format(json.dumps(context)))
 
-	client = boto3.client('lambda', "ap-southeast-1")
-	arguments = json.dumps({"body": json.dumps({"documentId": document.id})})
+	if event['httpMethod'] == "POST":
+		document = save_document(json.loads(event['body']))
 
-	print(arguments)
-	client.invoke_async(
-		FunctionName="serverless-RecogniserFunction-UFX25TZHAO33",
-		InvokeArgs= arguments
-	)
+		client = boto3.client('lambda', "ap-southeast-1")
+		arguments = json.dumps({"body": json.dumps({"documentId": document.id})})
 
-	return {
-	'statusCode': 200,
-	'body': document.id
-	}
+		print(arguments)
+		client.invoke_async(
+			FunctionName="serverless-RecogniserFunction-15E8F5GY65BFY",
+			InvokeArgs= arguments
+		)
+		return {
+			"isBase64Encoded": False,
+			"statusCode": 200,
+			"headers": {},
+			"body": json.dumps({"id": document.id})
+		}
+	elif event['httpMethod'] == "GET":
+		document_list = []
+		for document in Document.objects.all():
+			document_list.append({"id": document.id, "name": document.name})
+		return {
+			"isBase64Encoded": False,
+			"statusCode": 200,
+			"headers": {},
+			"body": json.dumps(document_list)
+		}
+
 
 def save_document(input_document):
 	import datetime, time
