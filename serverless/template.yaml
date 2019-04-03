@@ -1,50 +1,67 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: >
-  Recogniser and Input
+  Testing
 
-  Sam Template for Recogniser and Input apps
-
-# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
   Function:
     Timeout: 30
 
+
+
 Resources:
   InputFunction:
-    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Type: AWS::Serverless::Function
     Properties:
+      FunctionName: InputFunction
       CodeUri: input/
       Handler: lambda_function.lambda_handler
       Runtime: python2.7
       Layers:
       - !Ref SharedFiles
       Events:
-        post:
-          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+        getDocuments:
+          Type: Api
           Properties:
-            Path: /input
-            Method: post
-        get:
-          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+            RestApiId: !Ref ProfileApiGateway
+            Path: /document/
+            Method: GET
+        postDocument:
+          Type: Api
           Properties:
-            Path: /input/
-            Method: get
+            RestApiId: !Ref ProfileApiGateway
+            Path: /document
+            Method: POST
+        getDocument:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ProfileApiGateway
+            Path: /document/{identifier}
+            Method: GET
+        updateDocument:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ProfileApiGateway
+            Path: /document/{identifier}
+            Method: PUT
+
+        updatePageBackground:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ProfileApiGateway
+            Path: /page/{address}/background
+            Method: PUT
 
   RecogniserFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
+      FunctionName: RecogniserFunction
       CodeUri: recogniser/
       Handler: lambda_function.lambda_handler
       Runtime: python2.7
       Layers:
       - !Ref SharedFiles
-      Events:
-        Recogniser:
-          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessapi
-          Properties:
-            Path: /recogniser
-            Method: post
+
 
   SharedFiles:
     Type: AWS::Serverless::LayerVersion
@@ -56,24 +73,12 @@ Resources:
             - python2.7
         RetentionPolicy: Retain
 
-Outputs:
-  # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
-  InputApi:
-    Description: "API Gateway endpoint URL for Prod stage for MyScript function"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/api/v1/input/"
-  InputFunction:
-    Description: "Input Lambda Function ARN"
-    Value: !GetAtt InputFunction.Arn
-  InputFunctionIamRole:
-    Description: "Implicit IAM Role created for Input function"
-    Value: !GetAtt InputFunctionRole.Arn
 
-  RecogniserApi:
-    Description: "API Gateway endpoint URL for Prod stage for Recogniser function"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/api/v1/recogniser/"
-  RecogniserFunction:
-    Description: "Recogniser Lambda Function ARN"
-    Value: !GetAtt RecogniserFunction.Arn
-  RecogniserFunctionIamRole:
-    Description: "Implicit IAM Role created for Recogniser function"
-    Value: !GetAtt RecogniserFunctionRole.Arn
+  ProfileApiGateway:
+    DependsOn: InputFunction
+    Type: 'AWS::Serverless::Api'
+    Properties:
+      StageName: Prod
+      DefinitionUri: 'swagger.yaml'
+      Variables:
+        InputArn: !GetAtt InputFunction.Arn

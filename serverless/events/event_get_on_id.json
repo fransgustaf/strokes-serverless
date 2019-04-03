@@ -1,0 +1,43 @@
+{
+    "body": null,
+    "resource": "/document/{identifier}",
+    "requestContext": {
+        "domainName": "testPrefix.testDomainName",
+        "resourceId": "0m0q4i",
+        "apiId": "6kivzzbhl7",
+        "resourcePath": "/document/{identifier}",
+        "httpMethod": "GET",
+        "domainPrefix": "testPrefix",
+        "requestId": "f64914e0-548c-11e9-a395-f7c694d09a19",
+        "extendedRequestId": "XdqcvHeQyQ0FVIA=",
+        "path": "/document/{identifier}",
+        "accountId": "113274499007",
+        "identity": {
+            "apiKey": "test-invoke-api-key",
+            "userArn": "arn:aws:iam::113274499007:root",
+            "sourceIp": "test-invoke-source-ip",
+            "accessKey": "ASIARUX5PV67TDSJI4TK",
+            "caller": "113274499007",
+            "userAgent": "aws-internal/3 aws-sdk-java/1.11.498 Linux/4.9.137-0.1.ac.218.74.329.metal1.x86_64 OpenJDK_64-Bit_Server_VM/25.202-b08 java/1.8.0_202",
+            "user": "113274499007",
+            "cognitoIdentityPoolId": null,
+            "cognitoIdentityId": null,
+            "cognitoAuthenticationProvider": null,
+            "cognitoAuthenticationType": null,
+            "apiKeyId": "test-invoke-api-key-id",
+            "accountId": "113274499007"
+        },
+        "stage": "test-invoke-stage"
+    },
+    "queryStringParameters": null,
+    "multiValueHeaders": null,
+    "multiValueQueryStringParameters": null,
+    "pathParameters": {
+        "identifier": "30"
+    },
+    "headers": null,
+    "isBase64Encoded": false,
+    "stageVariables": null,
+    "path": "/document/30",
+    "httpMethod": "GET"
+}

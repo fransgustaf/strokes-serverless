@@ -2,7 +2,7 @@ import requests
 import json
 
 import sys, os
-sys.path.append(os.path.join(os.path.dirname(__file__), './', 'shared_files'))
+sys.path.append(os.path.join(os.path.dirname(__file__), './../', 'shared_files'))
 sys.path.append(os.path.join(os.path.dirname(__file__), '/opt'))
 import django_setup
 from django.db import models
@@ -16,7 +16,6 @@ application_key = "4443cea5-ada7-4d9f-be9b-6d68f530d2e1"
 
 def lambda_handler(event, context):
 	print('got event{}'.format(json.dumps(event)))
-	#print('got context{}'.format(json.dumps(context)))
 	document_id = json.loads(event['body'])['documentId']
 	run_recognitions(document_id)
 

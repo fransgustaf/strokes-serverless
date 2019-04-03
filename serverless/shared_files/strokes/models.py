@@ -18,8 +18,8 @@ class FieldSetting(models.Model):
 
 class RecognitionSetting(models.Model):
     field_setting = models.ForeignKey(FieldSetting, on_delete=models.CASCADE)
-    inputMode = models.CharField(max_length=20, default="CURSIVE")
-    inputType = models.CharField(max_length=20, default="MULTI_LINE_TEXT")
+    input_mode = models.CharField(max_length=20, default="CURSIVE")
+    input_type = models.CharField(max_length=20, default="MULTI_LINE_TEXT")
     language = models.CharField(max_length=20, default="en_US")
     
 class Document(models.Model):
@@ -30,22 +30,23 @@ class Document(models.Model):
 class Page(models.Model):
     page_setting = models.ForeignKey(PageSetting, on_delete=models.CASCADE)
     document = models.ForeignKey(Document, on_delete=models.CASCADE)
-    page_address = models.CharField(max_length=50, default=uuid.uuid4)
+    address = models.CharField(max_length=50, default=uuid.uuid4)
+    number = models.IntegerField(null=False)
     
 class Field(models.Model):
     page = models.ForeignKey(Page, on_delete=models.CASCADE)
     field_setting = models.ForeignKey(FieldSetting, on_delete=models.CASCADE)
+    recognition_setting = models.ForeignKey(RecognitionSetting, on_delete=models.CASCADE, null=True)
 
-class Recognition(models.Model):
-    field = models.ForeignKey(Field, on_delete=models.CASCADE)
-    recognition_setting = models.ForeignKey(RecognitionSetting, on_delete=models.CASCADE)
+class RecognitionResult(models.Model):
+    field = models.OneToOneField(Field, on_delete=models.CASCADE, primary_key=True,)
     selected_candidate_id = models.IntegerField(null=True)
 
 class RecognitionCandidate(models.Model):
-    recognition = models.ForeignKey(Recognition, on_delete=models.CASCADE)
+    recognition_result = models.ForeignKey(RecognitionResult, on_delete=models.CASCADE)
     value = models.CharField(max_length=200)
-    normalizedScore = models.DecimalField(max_digits=9, decimal_places=7)
-    resemblanceScore = models.DecimalField(max_digits=9, decimal_places=7)
+    normalized_score = models.DecimalField(max_digits=9, decimal_places=7)
+    resemblance_score = models.DecimalField(max_digits=9, decimal_places=7)
 
 class Stroke(models.Model):
     page = models.ForeignKey(Page, on_delete=models.CASCADE)
