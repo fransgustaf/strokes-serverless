@@ -39,7 +39,7 @@ def run_recognitions(document_id):
 
 	# Todo multiple pages
 	page = document.page_set.first()
-
+	print(page.field_set.count())
 	for field in page.field_set.all():
 		field_setting = FieldSetting.objects.get(id=field.field_setting_id)
 		recognition_settings = RecognitionSetting.objects.filter(field_setting_id=field_setting.id)
@@ -50,26 +50,30 @@ def run_recognitions(document_id):
 			response = run_recognition(myscript_json)
 			print(response.text)
 	
-			save_recognition(field.id, recognition_setting.id, response.text)
+			save_recognition_result(field.id, response.text)
 
 
 
 def get_myscript_json(stroke_set, field, field_setting, recognition_setting):
 	strokes_data = []
+	print("Field setting x: {0}, y: {1}, width: {2}, heigth: {3}").format(field_setting.x, field_setting.y, field_setting.width, field_setting.height)
 	for stroke in stroke_set.all():
 		x = []
 		y = []
 		for dot in stroke.dot_set.all():
+			#print("Dot x: {0}, y: {1},").format(dot.x, dot.y)
 			good_stroke = False
 			x.append(float(dot.x))
 			y.append(float(dot.y))
-			if dot.x > field_setting.x and dot.x < field_setting.x+field_setting.width and dot.y > field_setting.y and dot.y < field_setting.y+field_setting.height:
+			# Field setting x: 0.000000, y: 297.000000, width: 210.000000, heigth: 130.000000
+			# Dot x: 86.333333, y: 196.666667,
+			if dot.x > field_setting.x and dot.x < field_setting.x+field_setting.width and dot.y < field_setting.y and dot.y > field_setting.y-field_setting.height:
 				good_stroke = True
 		
 		if good_stroke:
 			strokes_data.append({"type": "stroke", "x": x, "y": y})
 
-	myscript_json = json.dumps({ "textParameter": { "language": "{0}".format(recognition_setting.language), "textInputMode": "{0}".format(recognition_setting.inputMode) }, "inputUnits": [ {  "textInputType": "{0}".format(recognition_setting.inputType),  "components": strokes_data }]})
+	myscript_json = json.dumps({ "textParameter": { "language": "{0}".format(recognition_setting.language), "textInputMode": "{0}".format(recognition_setting.input_mode) }, "inputUnits": [ {  "textInputType": "{0}".format(recognition_setting.input_type),  "components": strokes_data }]})
 	return myscript_json
 
 def run_recognition(strokes):
@@ -85,15 +89,16 @@ def run_recognition(strokes):
 
 
 # {"result":{"textSegmentResult":{"selectedCandidateIdx":0,"candidates":[{"label":"i. It.","normalizedScore":1.0,"resemblanceScore":0.5168961,"children":null}]}},"instanceId":"296cbe8b-3018-4b6b-bec0-a44b63a8fe7d"}
-def save_recognition(field_id, recognition_setting_id, result):
+def save_recognition_result(field_id, result):
 	result_json = json.loads(result)
 
-	recognition = Recognition(field_id=field_id, recognition_setting_id=recognition_setting_id, selected_candidate_id=int(result_json['result']['textSegmentResult']['selectedCandidateIdx']))
-	recognition.save()
+	if 'textSegmentResult' in result_json['result']:
+		recognition_result = RecognitionResult(field_id=field_id, selected_candidate_id=int(result_json['result']['textSegmentResult']['selectedCandidateIdx']))
+		recognition_result.save()
 
-	for candidate in result_json['result']['textSegmentResult']['candidates']:
-		recognition_candidate = RecognitionCandidate(recognition_id=recognition.id, value=candidate['label'], normalizedScore=candidate['normalizedScore'], resemblanceScore=candidate['resemblanceScore'])
-		recognition_candidate.save()
+		for candidate in result_json['result']['textSegmentResult']['candidates']:
+			recognition_candidate = RecognitionCandidate(recognition_result_id=field_id, value=candidate['label'], normalized_score=candidate['normalizedScore'], resemblance_score=candidate['resemblanceScore'])
+			recognition_candidate.save()
 
 
 def create_multipart(boundary, strokes):

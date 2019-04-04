@@ -20,11 +20,37 @@ Resources:
       Layers:
       - !Ref SharedFiles
       Events:
+        getDocumentSettings:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ProfileApiGateway
+            Path: /documentSetting
+            Method: GET
+        postDocumentSetting:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ProfileApiGateway
+            Path: /documentSetting
+            Method: POST
+        getDocumentSetting:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ProfileApiGateway
+            Path: /documentSetting/{identifier}
+            Method: GET
+        updateDocumentSetting:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ProfileApiGateway
+            Path: /documentSetting/{identifier}
+            Method: PUT
+
+
         getDocuments:
           Type: Api
           Properties:
             RestApiId: !Ref ProfileApiGateway
-            Path: /document/
+            Path: /document
             Method: GET
         postDocument:
           Type: Api
@@ -43,6 +69,19 @@ Resources:
           Properties:
             RestApiId: !Ref ProfileApiGateway
             Path: /document/{identifier}
+            Method: PUT
+
+        getPageByAddress:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ProfileApiGateway
+            Path: /page/{address}
+            Method: GET
+        updatePageByAddress:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ProfileApiGateway
+            Path: /page/{address}
             Method: PUT
 
         updatePageBackground:

@@ -1,6 +1,7 @@
 import json
 import boto3
 import base64
+import uuid
 
 import sys, os
 sys.path.append(os.path.join(os.path.dirname(__file__), './../', 'shared_files'))
@@ -14,6 +15,16 @@ def lambda_handler(event, context):
 
 	if event['resource'].endswith('background'):
 		handleBackground(event)
+
+	elif event['resource'] == "/documentSetting":
+		document_setting_id = save_document_settings(event)
+
+		return {
+			"isBase64Encoded": False,
+			"statusCode": 200,
+			"headers": {},
+			"body": document_setting_id
+		}		
 
 	else:
 		if event['httpMethod'] == "POST" or event['httpMethod'] == "PUT":
@@ -76,30 +87,101 @@ def handleBackground(event):
 	object = s3.Object('fs-background-images', '{0}.{1}'.format(address, "jpeg" if event['headers']['Content-Type'] else 'png'))
 	object.put(Body=base64.decodestring(event['body']), ContentType='image/jpeg',ACL='public-read')
 
+def save_document_settings(event):
+	params = event['pathParameters']
+	input_document_setting = json.loads(event['body'])
+
+	input_id=-1
+
+	document_setting = None
+	document_settings = DocumentSetting.objects.filter(id=input_id)
+	if document_settings.exists():
+		document_setting = document_settings.first()
+	else:
+		document_setting = DocumentSetting(default_name=input_document_setting['default_name'])
+		document_setting.save()
+
+	for input_page_setting in input_document_setting['pageSettings']:
+		save_page_setting(document_setting.id, input_page_setting)
+
+	return document_setting.id
+
+def save_page_setting(document_setting_id, input_page_setting):
+	input_id=-1
+
+	page_setting = None
+	page_settings = PageSetting.objects.filter(id=input_id)
+	if page_settings.exists():
+		page_setting = page_settings.first()
+	else:
+		page_setting = PageSetting(document_setting_id=document_setting_id, number=input_page_setting['number'], width=input_page_setting['width'], height=input_page_setting['height'])
+		page_setting.save()
+
+	print(input_page_setting['fieldSettings'])
+
+	for input_field_setting in input_page_setting['fieldSettings']:
+		print(input_field_setting)
+		save_field_setting(page_setting.id, input_field_setting)
+
+	return page_setting.id
+
+def save_field_setting(page_setting_id, input_field_setting):
+	input_id=-1
+
+	field_setting = None
+	field_settings = FieldSetting.objects.filter(id=input_id)
+	if field_settings.exists():
+		field_setting = field_settings.first()
+	else:
+		field_setting = FieldSetting(page_setting_id=page_setting_id, x=input_field_setting['x'], y=input_field_setting['y'], width=input_field_setting['width'], height=input_field_setting['height'])
+		field_setting.save()
+
+	save_recognition_setting(field_setting.id, input_field_setting['recognitionSetting'])
+
+	return field_setting.id
+
+def save_recognition_setting(field_setting_id, input_recognition_setting):
+	input_id=-1
+
+	recognition_setting = None
+	recognition_settings = RecognitionSetting.objects.filter(id=input_id)
+	if recognition_settings.exists():
+		recognition_setting = recognition_settings.first()
+	else:
+		recognition_setting = RecognitionSetting(field_setting_id=field_setting_id, input_mode=input_recognition_setting['input_mode'], input_type=input_recognition_setting['input_type'], language=input_recognition_setting['language'])
+		recognition_setting.save()
+
+	return recognition_setting.id
+
 
 def save_document(event):
 	params = event['pathParameters']
-	params = event['pathParameters']
 
 	identifier = None
-	if 'identifier' in params:
+	if params and 'identifier' in params:
 		identifier = params['identifier']
 
 	input_document = json.loads(event['body'])
-
+	print(input_document)
 	document = None
 	document_setting = None
+	create_document = False
 	if identifier:
 		documents = Document.objects.filter(identifier=identifier)
 		if documents.exists():
 			document = documents.first()
 			document_setting = DocumentSetting.objects.get(id=document.document_setting_id)
 		else:
-			new_document = False
-			document_setting_id = input_document['documentSettingId']
-			document_setting = DocumentSetting.objects.get(id=document_setting_id)
-			document = Document(document_setting_id=document_setting.id, name=document_setting.default_name, identifier=identifier)
-			document.save()
+			create_document = True
+	else:
+		create_document = True
+		identifier = uuid.uuid4()
+
+	if create_document:
+		document_setting_id = input_document['documentSettingId']
+		document_setting = DocumentSetting.objects.get(id=document_setting_id)
+		document = Document(document_setting_id=document_setting.id, name=document_setting.default_name, identifier=identifier)
+		document.save()
 
 	for input_page in input_document['pages']:
 		page_address = None
@@ -115,12 +197,8 @@ def save_document(event):
 		if page.exists():
 			page = document.page_set.filter(address=page_address).first()
 			page_setting = PageSetting.objects.get(id=page.page_setting_id)
-		else:	
-			if page_number is not None:
-				page_setting = PageSetting.objects.get(number=page_number)
-			else:
-				page_setting = PageSetting.objects.get(number=1)
-			import uuid
+		else:
+			page_setting = PageSetting.objects.get(document_setting_id=document_setting.id, number=1 if page_number is None else page_number)
 			page = Page(page_setting_id=page_setting.id, document_id=document.id, address=uuid.uuid4() if page_address is None else page_address, number= 1 if page_number is None else page_number)
 			page.save()
 
@@ -140,4 +218,5 @@ def save_document(event):
 			Dot.objects.bulk_create(dots_to_insert)
 
 	return document
+
 

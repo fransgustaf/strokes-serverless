@@ -6,6 +6,7 @@ class DocumentSetting(models.Model):
 
 class PageSetting(models.Model):
     document_setting = models.ForeignKey(DocumentSetting, on_delete=models.CASCADE)
+    number = models.IntegerField(null=False)
     width = models.DecimalField(max_digits=20, decimal_places=6)
     height = models.DecimalField(max_digits=20, decimal_places=6)
 
