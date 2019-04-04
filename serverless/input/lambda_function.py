@@ -195,12 +195,14 @@ def save_document(event):
 		page = document.page_set.filter(address=page_address)
 		page_setting = None
 		if page.exists():
+			print("page exists {0} {1}").format(page.id, page.address)
 			page = document.page_set.filter(address=page_address).first()
 			page_setting = PageSetting.objects.get(id=page.page_setting_id)
 		else:
 			page_setting = PageSetting.objects.get(document_setting_id=document_setting.id, number=1 if page_number is None else page_number)
 			page = Page(page_setting_id=page_setting.id, document_id=document.id, address=uuid.uuid4() if page_address is None else page_address, number= 1 if page_number is None else page_number)
 			page.save()
+			print("new page {0} {1}").format(page.id, page.address)
 
 		# Create fields
 		for field_setting in FieldSetting.objects.filter(page_setting_id=page_setting.id):

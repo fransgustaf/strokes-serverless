@@ -3,7 +3,7 @@ import json
 
 import sys, os
 sys.path.append(os.path.join(os.path.dirname(__file__), './../', 'shared_files'))
-sys.path.append(os.path.join(os.path.dirname(__file__), '/opt'))
+sys.path.append('/opt')
 import django_setup
 from django.db import models
 from strokes.models import *
@@ -37,20 +37,18 @@ def run_recognitions(document_id):
 
 	document = Document.objects.get(id=document_id)
 
-	# Todo multiple pages
-	page = document.page_set.first()
-	print(page.field_set.count())
-	for field in page.field_set.all():
-		field_setting = FieldSetting.objects.get(id=field.field_setting_id)
-		recognition_settings = RecognitionSetting.objects.filter(field_setting_id=field_setting.id)
-		# Set recognition settings from recogntion settings
-		if recognition_settings.exists():
-			recognition_setting = recognition_settings.first()
-			myscript_json = get_myscript_json(page.stroke_set.all(), field, field_setting, recognition_setting)
-			response = run_recognition(myscript_json)
-			print(response.text)
-	
-			save_recognition_result(field.id, response.text)
+	for page in document.page_set.all():
+		for field in page.field_set.all():
+			field_setting = FieldSetting.objects.get(id=field.field_setting_id)
+			recognition_settings = RecognitionSetting.objects.filter(field_setting_id=field_setting.id)
+			# Set recognition settings from recogntion settings
+			if recognition_settings.exists():
+				recognition_setting = recognition_settings.first()
+				myscript_json = get_myscript_json(page.stroke_set.all(), field, field_setting, recognition_setting)
+				response = run_recognition(myscript_json)
+				print(response.text)
+		
+				save_recognition_result(field.id, response.text)
 
 
 
