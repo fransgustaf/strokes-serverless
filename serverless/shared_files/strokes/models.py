@@ -1,5 +1,6 @@
 import uuid
 from django.db import models
+from django.core import serializers
 
 class DocumentSetting(models.Model):
     default_name = models.CharField(max_length=200, default="A new default document name")
@@ -33,14 +34,24 @@ class Page(models.Model):
     document = models.ForeignKey(Document, on_delete=models.CASCADE)
     address = models.CharField(max_length=50, default=uuid.uuid4)
     number = models.IntegerField(null=False)
-    
+
+    def get_strokes_as_json(self):
+        strokes_data = []
+        for stroke in self.stroke_set.all():
+            stroke_data = []
+            for dot in stroke.dot_set.all():
+                #stroke.append(serializers.serialize("json", [stroke, ]))
+                stroke_data.append({"x": float(dot.x), "y": float(dot.y)})
+            strokes_data.append({"dots": stroke_data})
+        return strokes_data
+
 class Field(models.Model):
     page = models.ForeignKey(Page, on_delete=models.CASCADE)
     field_setting = models.ForeignKey(FieldSetting, on_delete=models.CASCADE)
     recognition_setting = models.ForeignKey(RecognitionSetting, on_delete=models.CASCADE, null=True)
 
 class RecognitionResult(models.Model):
-    field = models.OneToOneField(Field, on_delete=models.CASCADE, primary_key=True,)
+    field = models.OneToOneField(Field, on_delete=models.CASCADE, primary_key=False)
     selected_candidate_id = models.IntegerField(null=True)
 
 class RecognitionCandidate(models.Model):

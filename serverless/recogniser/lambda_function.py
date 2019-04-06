@@ -9,8 +9,8 @@ from django.db import models
 from strokes.models import *
 
 boundary = "XXXXXXXXXXXXX"
-url = "https://cloud.myscript.com/api/v3.0/recognition/rest/text/doSimpleRecognition.json"
-application_key = "4443cea5-ada7-4d9f-be9b-6d68f530d2e1"
+myscript_url = "https://cloud.myscript.com/api/v3.0/recognition/rest/text/doSimpleRecognition.json"
+myscript_application_key = "4443cea5-ada7-4d9f-be9b-6d68f530d2e1"
 
 # Multi part only works in Python 2.7 for some reason. Take care of when rerdoing multipart section properly.
 
@@ -83,7 +83,7 @@ def run_recognition(strokes):
 
 	payload = create_multipart(boundary, strokes)
 
-	return requests.request("POST", url, data = payload, headers = headers)
+	return requests.request("POST", myscript_url, data = payload, headers = headers)
 
 
 # {"result":{"textSegmentResult":{"selectedCandidateIdx":0,"candidates":[{"label":"i. It.","normalizedScore":1.0,"resemblanceScore":0.5168961,"children":null}]}},"instanceId":"296cbe8b-3018-4b6b-bec0-a44b63a8fe7d"}
@@ -91,11 +91,12 @@ def save_recognition_result(field_id, result):
 	result_json = json.loads(result)
 
 	if 'textSegmentResult' in result_json['result']:
+		RecognitionResult.objects.filter(field_id=field_id).delete()
 		recognition_result = RecognitionResult(field_id=field_id, selected_candidate_id=int(result_json['result']['textSegmentResult']['selectedCandidateIdx']))
 		recognition_result.save()
 
 		for candidate in result_json['result']['textSegmentResult']['candidates']:
-			recognition_candidate = RecognitionCandidate(recognition_result_id=field_id, value=candidate['label'], normalized_score=candidate['normalizedScore'], resemblance_score=candidate['resemblanceScore'])
+			recognition_candidate = RecognitionCandidate(recognition_result_id=recognition_result.id, value=candidate['label'], normalized_score=candidate['normalizedScore'], resemblance_score=candidate['resemblanceScore'])
 			recognition_candidate.save()
 
 
@@ -103,7 +104,7 @@ def create_multipart(boundary, strokes):
 	boundary_block = ("--{0}").format(boundary)
 	new_line = "\r\n"
 
-	application_key_block = ('Content-Disposition: form-data; name="applicationKey"{0}{1}{2}').format(new_line, new_line, application_key)
+	application_key_block = ('Content-Disposition: form-data; name="applicationKey"{0}{1}{2}').format(new_line, new_line, myscript_application_key)
 	#print(application_key_block)
 
 	strokes_block = ('Content-Disposition: form-data; name="textInput"{0}{1}{2}').format(new_line, new_line, strokes)
