@@ -17,6 +17,14 @@ Resources:
       CodeUri: input/
       Handler: lambda_function.lambda_handler
       Runtime: python2.7
+      Policies:
+        - AWSLambdaExecute # Managed Policy
+        - Version: '2012-10-17' # Policy Document
+          Statement:
+            - Effect: Allow
+              Action:
+              - 's3:*'
+              Resource: 'arn:aws:s3:::*/*'
       Layers:
       - !Ref SharedFiles
       Events:
@@ -116,8 +124,39 @@ Resources:
   ProfileApiGateway:
     DependsOn: InputFunction
     Type: 'AWS::Serverless::Api'
+    ApiKeySourceType: HEADER
     Properties:
       StageName: Prod
       DefinitionUri: 'swagger.yaml'
       Variables:
         InputArn: !GetAtt InputFunction.Arn
+      BinaryMediaTypes:
+        - "image/jpeg"
+        - "image/jpg"
+        - "image/png"
+
+  ApiKey: 
+    DependsOn: ProfileApiGateway
+    Type: AWS::ApiGateway::ApiKey
+    Properties: 
+      Name: "Test customer"
+      Description: "CloudFormation API Key V1"
+      Enabled: true
+      GenerateDistinctId: false
+  ApiUsagePlan:
+    Type: "AWS::ApiGateway::UsagePlan"
+    Properties:
+      Description: Free usage plan
+      Quota:
+        Limit: 100
+        Period: DAY
+      Throttle:
+        BurstLimit: 3
+        RateLimit: 3
+      UsagePlanName: Free
+  ApiUsagePlanKey:
+    Type: "AWS::ApiGateway::UsagePlanKey"
+    Properties:
+      KeyId: !Ref ApiKey
+      KeyType: API_KEY
+      UsagePlanId: !Ref ApiUsagePlan

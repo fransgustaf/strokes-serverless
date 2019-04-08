@@ -17,6 +17,8 @@ paths:
           description: Document not found
         '405':
           description: Validation exception
+      security:
+        - ApiKey: []
       x-amazon-apigateway-integration:
         httpMethod: POST
         type: aws_proxy
@@ -36,6 +38,8 @@ paths:
           description: Document not found
         '405':
           description: Validation exception
+      security:
+        - ApiKey: []
       x-amazon-apigateway-integration:
         httpMethod: POST
         type: aws_proxy
@@ -66,6 +70,8 @@ paths:
           description: Invalid ID supplied
         '404':
           description: Document not found
+      security:
+        - ApiKey: []
       x-amazon-apigateway-integration:
         httpMethod: POST
         type: aws_proxy
@@ -95,6 +101,8 @@ paths:
           description: Invalid ID supplied
         '404':
           description: Document not found
+      security:
+        - ApiKey: []
       x-amazon-apigateway-integration:
         httpMethod: POST
         type: aws_proxy
@@ -121,6 +129,8 @@ paths:
           description: Page not found
         '405':
           description: Validation exception
+      security:
+        - ApiKey: []
       x-amazon-apigateway-integration:
         httpMethod: POST
         type: aws_proxy
@@ -150,6 +160,8 @@ paths:
           description: Page not found
         '405':
           description: Validation exception
+      security:
+        - ApiKey: []
       x-amazon-apigateway-integration:
         httpMethod: POST
         type: aws_proxy
@@ -175,6 +187,8 @@ paths:
           description: Page not found
         '405':
           description: Validation exception
+      security:
+        - ApiKey: []
       x-amazon-apigateway-integration:
         httpMethod: POST
         type: aws_proxy
@@ -203,6 +217,8 @@ paths:
           description: Page not found
         '405':
           description: Validation exception
+      security:
+        - ApiKey: []
       x-amazon-apigateway-integration:
         httpMethod: POST
         type: aws_proxy
@@ -229,6 +245,8 @@ paths:
           description: Page not found
         '405':
           description: Validation exception
+      security:
+        - ApiKey: []
       x-amazon-apigateway-integration:
         httpMethod: POST
         type: aws_proxy
@@ -254,6 +272,8 @@ paths:
           description: Page not found
         '405':
           description: Validation exception
+      security:
+        - ApiKey: []
       x-amazon-apigateway-integration:
         httpMethod: POST
         type: aws_proxy
@@ -280,6 +300,8 @@ paths:
           description: Page not found
         '405':
           description: Validation exception
+      security:
+        - ApiKey: []
       x-amazon-apigateway-integration:
         httpMethod: POST
         type: aws_proxy
@@ -306,6 +328,8 @@ paths:
           description: Page not found
         '405':
           description: Validation exception
+      security:
+        - ApiKey: []
       x-amazon-apigateway-integration:
         httpMethod: POST
         type: aws_proxy
@@ -331,6 +355,8 @@ paths:
           description: Page not found
         '405':
           description: Validation exception
+      security:
+        - ApiKey: []
       x-amazon-apigateway-integration:
         httpMethod: POST
         type: aws_proxy
@@ -350,6 +376,8 @@ paths:
           description: Document not found
         '405':
           description: Validation exception
+      security:
+        - ApiKey: []
       x-amazon-apigateway-integration:
         httpMethod: POST
         type: aws_proxy
@@ -369,6 +397,8 @@ paths:
           description: Document not found
         '405':
           description: Validation exception
+      security:
+        - ApiKey: []
       x-amazon-apigateway-integration:
         httpMethod: POST
         type: aws_proxy
@@ -399,6 +429,8 @@ paths:
           description: Invalid ID supplied
         '404':
           description: Document not found
+      security:
+        - ApiKey: []
       x-amazon-apigateway-integration:
         httpMethod: POST
         type: aws_proxy
@@ -428,6 +460,8 @@ paths:
           description: Invalid ID supplied
         '404':
           description: Document not found
+      security:
+        - ApiKey: []
       x-amazon-apigateway-integration:
         httpMethod: POST
         type: aws_proxy
@@ -455,6 +489,8 @@ paths:
           description: Page not found
         '405':
           description: Validation exception
+      security:
+        - ApiKey: []
       x-amazon-apigateway-integration:
         httpMethod: POST
         type: aws_proxy
@@ -480,6 +516,8 @@ paths:
           description: Page not found
         '405':
           description: Validation exception
+      security:
+        - ApiKey: []
       x-amazon-apigateway-integration:
         httpMethod: POST
         type: aws_proxy
@@ -521,6 +559,8 @@ paths:
           description: Page not found
         '405':
           description: Validation exception
+      security:
+        - ApiKey: []
       x-amazon-apigateway-integration:
         httpMethod: POST
         type: aws_proxy
@@ -552,6 +592,8 @@ paths:
           description: Page not found
         '405':
           description: Validation exception
+      security:
+        - ApiKey: []
       x-amazon-apigateway-integration:
         httpMethod: POST
         type: aws_proxy
@@ -580,6 +622,8 @@ paths:
           description: Page not found
         '405':
           description: Validation exception
+      security:
+        - ApiKey: []
       x-amazon-apigateway-integration:
         httpMethod: POST
         type: aws_proxy
@@ -606,6 +650,8 @@ paths:
           description: Page not found
         '405':
           description: Validation exception
+      security:
+        - ApiKey: []
       x-amazon-apigateway-integration:
         httpMethod: POST
         type: aws_proxy
@@ -631,6 +677,8 @@ paths:
           description: Page not found
         '405':
           description: Validation exception
+      security:
+        - ApiKey: []
       x-amazon-apigateway-integration:
         httpMethod: POST
         type: aws_proxy
@@ -673,6 +721,8 @@ paths:
           description: Page not found
         '405':
           description: Validation exception
+      security:
+        - ApiKey: []
       x-amazon-apigateway-integration:
         httpMethod: POST
         type: aws_proxy
@@ -716,6 +766,8 @@ paths:
           description: Page not found
         '405':
           description: Validation exception
+      security:
+        - ApiKey: []
       x-amazon-apigateway-integration:
         httpMethod: POST
         type: aws_proxy
@@ -743,6 +795,8 @@ paths:
           description: Page not found
         '405':
           description: Validation exception
+      security:
+        - ApiKey: []
       x-amazon-apigateway-integration:
         httpMethod: POST
         type: aws_proxy
@@ -768,6 +822,8 @@ paths:
           description: Page not found
         '405':
           description: Validation exception
+      security:
+        - ApiKey: []
       x-amazon-apigateway-integration:
         httpMethod: POST
         type: aws_proxy
@@ -801,6 +857,8 @@ paths:
           description: Page not found
         '405':
           description: Validation exception
+      security:
+        - ApiKey: []
       x-amazon-apigateway-integration:
         httpMethod: POST
         type: aws_proxy
@@ -832,6 +890,8 @@ paths:
           description: Page not found
         '405':
           description: Validation exception
+      security:
+        - ApiKey: []
       x-amazon-apigateway-integration:
         httpMethod: POST
         type: aws_proxy
@@ -839,10 +899,16 @@ paths:
           arn:aws:apigateway:ap-southeast-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ap-southeast-1:113274499007:function:InputFunction/invocations
       requestBody:
         $ref: '#/components/requestBodies/Page'
+        
 servers:
   - url: 'https://virtserver.swaggerhub.com/formidableservices/naturalinput/1.0.0'
   - url: 'http://virtserver.swaggerhub.com/formidableservices/naturalinput/1.0.0'
 components:
+  securitySchemes:
+    ApiKey:
+      type: apiKey
+      name: x-api-key
+      in: header
   requestBodies:
     PageSetting:
       content:
