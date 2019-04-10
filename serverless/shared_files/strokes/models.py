@@ -194,7 +194,7 @@ class Document(models.Model):
                 page_setting = PageSetting.objects.get(document_setting_id=document_setting.id, number=1 if page_number is None else page_number, customer_id=customer_id)
                 page = Page(page_setting_id=page_setting.id, document_id=document.id, address=uuid.uuid4() if page_address is None else page_address, number= 1 if page_number is None else page_number, customer_id=customer_id)
                 page.save()
-                print("new page {0} {1}").format(page.id, page.address)
+                print("new page {0} {1}".format(page.id, page.address))
 
             # Create fields
             for field_setting in FieldSetting.objects.filter(page_setting_id=page_setting.id, customer_id=customer_id):
@@ -239,7 +239,7 @@ class Page(models.Model):
 
     def get_myscript_json(self, field, field_setting, recognition_setting):
         strokes_data = []
-        print("Field setting x: {0}, y: {1}, width: {2}, heigth: {3}").format(field_setting.x, field_setting.y, field_setting.width, field_setting.height)
+        print("Field setting x: {0}, y: {1}, width: {2}, heigth: {3}".format(field_setting.x, field_setting.y, field_setting.width, field_setting.height))
         for stroke in self.stroke_set.all():
             x = []
             y = []

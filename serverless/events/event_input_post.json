@@ -16,6 +16,7 @@
         "stage": "Prod",
         "requestTimeEpoch": 1554369881150,
         "identity": {
+	    "apiKey": "zzbZRluVYu8dyHVCtK1sY6ydQ7z6kCTO7ozghVKi",
             "userArn": null,
             "cognitoAuthenticationType": null,
             "accessKey": null,

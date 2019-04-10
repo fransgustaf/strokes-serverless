@@ -23,8 +23,10 @@ Resources:
           Statement:
             - Effect: Allow
               Action:
-              - 's3:*'
-              Resource: 'arn:aws:s3:::*/*'
+              - "s3:*"
+              - "lambda:InvokeFunction"
+              - "lambda:InvokeAsync"
+              Resource: "*"
       Layers:
       - !Ref SharedFiles
       Events:
