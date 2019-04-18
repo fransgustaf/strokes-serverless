@@ -12,25 +12,36 @@ from strokes.models import *
 
 def lambda_handler(event, context):
 	print('got event{}'.format(json.dumps(event)))
-
 	customer = Customer.objects.get(api_key=event['requestContext']['identity']['apiKey'])
+	event_body = json.loads(event['body'])
+	params = event['pathParameters']
+	# "resource": "/document/{identifier}",
+	# "resource": "/document/{identifier}",
+	# /document/{identifier}/page/{number}
 
-	if event['resource'].endswith('background'):
+	current_path = get_path(event['path'])
+
+	if current_path =='background':
 		handleBackground(event)
 
-	elif event['resource'] == "/documentSetting":
-		document_setting_id = DocumentSetting.save_document_settings(event, customer.id)
+	elif current_path == "documentSetting":
+		document_setting = DocumentSetting.save_document_setting(event_body, customer.id)
 
 		return {
 			"isBase64Encoded": False,
 			"statusCode": 200,
 			"headers": {},
-			"body": document_setting_id
+			"body": document_setting.id
 		}
 
-	else:
+	elif current_path == "document":
 		if event['httpMethod'] == "POST" or event['httpMethod'] == "PUT":
-			document = Document.save_document(event, customer.id)
+			identifier = None
+			if params and 'identifier' in params:
+				identifier = params['identifier']
+
+			input_document = json.loads(event['body'])
+			document = Document.save_document(input_document, identifier, customer.id)
 
 			client = boto3.client('lambda', "ap-southeast-1")
 			arguments = json.dumps({"body": json.dumps({"documentId": document.id})})
@@ -57,6 +68,33 @@ def lambda_handler(event, context):
 				"body": json.dumps(document_list)
 			}
 
+	elif current_path == "page":
+		page = Page.save_page(customer.id, event_body, params['address'], params['identifier'])
+
+		return {
+			"isBase64Encoded": False,
+			"statusCode": 200,
+			"headers": {},
+			"body": page.address
+		}
+
+	elif current_path == "stroke":
+		# /page/{address}/stroke
+		# /document/{identifier}/page/{number}/stroke
+		if event['httpMethod'] == "PUT":
+			page_address = ''
+			if 'address' in params:
+				stroke = Stroke.save_by_address(params['address'], event_body, customer.id)
+			else:
+				stroke = Stroke.save_by_document_page(params['identifier'], params['number'], event_body, customer.id)
+
+		return {
+			"isBase64Encoded": False,
+			"statusCode": 200,
+			"headers": {},
+			"body": stroke.id
+		}
+
 	return {
 		"isBase64Encoded": False,
 		"statusCode": 200,
@@ -64,10 +102,20 @@ def lambda_handler(event, context):
 		"body": ""
 		}
 
+# Get current path
+def get_path(path):
+	available_paths = ['documentSetting', 'pageSetting', 'fieldSetting', 'recognitionSetting', 'document', 'page', 'field', 'stroke', 'background']
+	for available_path in available_paths:
+		print("checking: {0} for: {1}".format(path, available_path))
+		if path.endswith(available_path):
+			print("found path: {0}".format(available_path))
+			return available_path
+	return get_path(path.rsplit('/',1)[0])
+
 # ToDo put model logic in models.py to avoid customers affecting each others data
 def handleBackground(event):
 	# "path": "/page/4874352/background"
-	# "pathParameters": { "address": "4874352" }
+	# "paxthParameters": { "address": "4874352" }
 	# "path": "/document/30/page/1/background"
 	# "pathParameters": { "identifier": "30", "page_number": "1" }
 

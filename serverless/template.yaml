@@ -7,18 +7,12 @@ Globals:
   Function:
     Timeout: 30
 
-
-
 Resources:
   InputFunction:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: InputFunction
-      CodeUri: input/
-      Handler: lambda_function.lambda_handler
-      Runtime: python2.7
       Policies:
-        - AWSLambdaExecute # Managed Policy
         - Version: '2012-10-17' # Policy Document
           Statement:
             - Effect: Allow
@@ -26,37 +20,69 @@ Resources:
               - "s3:*"
               - "lambda:InvokeFunction"
               - "lambda:InvokeAsync"
+              - "logs:CreateLogGroup"
+              - "logs:CreateLogStream"
+              - "logs:PutLogEvents"
               Resource: "*"
+      CodeUri: input/
+      Handler: lambda_function.lambda_handler
+      Runtime: python3.7
       Layers:
       - !Ref SharedFiles
       Events:
-        getDocumentSettings:
-          Type: Api
-          Properties:
-            RestApiId: !Ref ProfileApiGateway
-            Path: /documentSetting
-            Method: GET
         postDocumentSetting:
           Type: Api
           Properties:
             RestApiId: !Ref ProfileApiGateway
             Path: /documentSetting
             Method: POST
-        getDocumentSetting:
-          Type: Api
-          Properties:
-            RestApiId: !Ref ProfileApiGateway
-            Path: /documentSetting/{identifier}
-            Method: GET
-        updateDocumentSetting:
+        putDocumentSettingIdentifier:
           Type: Api
           Properties:
             RestApiId: !Ref ProfileApiGateway
             Path: /documentSetting/{identifier}
             Method: PUT
 
+        postPageSetting:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ProfileApiGateway
+            Path: /pageSetting
+            Method: POST
+        putPageSetting:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ProfileApiGateway
+            Path: /pageSetting/{id}
+            Method: PUT
 
-        getDocuments:
+        postFieldSetting:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ProfileApiGateway
+            Path: /fieldSetting
+            Method: POST
+        putFieldSetting:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ProfileApiGateway
+            Path: /fieldSetting/{id}
+            Method: PUT
+
+        postRecognitionSetting:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ProfileApiGateway
+            Path: /recognitionSetting
+            Method: POST
+        putRecognitionSetting:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ProfileApiGateway
+            Path: /recognitionSetting/{id}
+            Method: PUT
+
+        getDocument:
           Type: Api
           Properties:
             RestApiId: !Ref ProfileApiGateway
@@ -68,31 +94,45 @@ Resources:
             RestApiId: !Ref ProfileApiGateway
             Path: /document
             Method: POST
-        getDocument:
+        getDocumentByIdentifier:
           Type: Api
           Properties:
             RestApiId: !Ref ProfileApiGateway
             Path: /document/{identifier}
             Method: GET
-        updateDocument:
+        putDocumentByIdentifier:
           Type: Api
           Properties:
             RestApiId: !Ref ProfileApiGateway
             Path: /document/{identifier}
             Method: PUT
 
-        getPageByAddress:
+        putPageByDocument:
           Type: Api
           Properties:
             RestApiId: !Ref ProfileApiGateway
-            Path: /page/{address}
-            Method: GET
-        updatePageByAddress:
-          Type: Api
-          Properties:
-            RestApiId: !Ref ProfileApiGateway
-            Path: /page/{address}
+            Path: /document/{identifier}/page/{address}
             Method: PUT
+
+        postField:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ProfileApiGateway
+            Path: /field
+            Method: POST
+        putField:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ProfileApiGateway
+            Path: /field/{id}
+            Method: PUT
+
+        putStrokeByPageNumber:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ProfileApiGateway
+            Path: /page/{address}/stroke
+            Method: POST
 
         updatePageBackground:
           Type: Api
@@ -107,7 +147,7 @@ Resources:
       FunctionName: RecogniserFunction
       CodeUri: recogniser/
       Handler: lambda_function.lambda_handler
-      Runtime: python2.7
+      Runtime: python3.7
       Layers:
       - !Ref SharedFiles
 
@@ -119,7 +159,7 @@ Resources:
         Description: Shared files like models.py
         ContentUri: shared_files/
         CompatibleRuntimes:
-            - python2.7
+            - python3.7
         RetentionPolicy: Retain
 
 
@@ -128,7 +168,7 @@ Resources:
     Type: 'AWS::Serverless::Api'
     ApiKeySourceType: HEADER
     Properties:
-      StageName: Prod
+      StageName: prod
       DefinitionUri: 'swagger.yaml'
       Variables:
         InputArn: !GetAtt InputFunction.Arn
@@ -136,6 +176,7 @@ Resources:
         - "image/jpeg"
         - "image/jpg"
         - "image/png"
+
 
   ApiKey: 
     DependsOn: ProfileApiGateway

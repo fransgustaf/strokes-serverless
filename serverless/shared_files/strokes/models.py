@@ -15,9 +15,7 @@ class DocumentSetting(models.Model):
         unique_together = ('id', 'customer')
 
     @staticmethod
-    def save_document_settings(event, customer_id):
-        params = event['pathParameters']
-        input_document_setting = json.loads(event['body'])
+    def save_document_setting(input_document_setting, customer_id):
 
         input_id=-1
 
@@ -32,7 +30,7 @@ class DocumentSetting(models.Model):
         for input_page_setting in input_document_setting['pageSettings']:
             PageSetting.save_page_setting(document_setting.id, input_page_setting, customer_id)
 
-        return document_setting.id
+        return document_setting
 
 
 class PageSetting(models.Model):
@@ -143,15 +141,7 @@ class Document(models.Model):
         return self.page_set.all()
 
     @staticmethod
-    def save_document(event, customer_id):
-        params = event['pathParameters']
-
-        identifier = None
-        if params and 'identifier' in params:
-            identifier = params['identifier']
-
-        input_document = json.loads(event['body'])
-        print(input_document)
+    def save_document(event_body, identifier, customer_id):
         document = None
         document_setting = None
         create_document = False
@@ -167,49 +157,10 @@ class Document(models.Model):
             identifier = uuid.uuid4()
 
         if create_document:
-            document_setting_id = input_document['documentSettingId']
+            document_setting_id = event_body['documentSettingId']
             document_setting = DocumentSetting.objects.get(id=document_setting_id, customer_id=customer_id)
             document = Document(document_setting_id=document_setting.id, name=document_setting.default_name, identifier=identifier, customer_id=customer_id)
             document.save()
-
-        for input_page in input_document['pages']:
-            page_address = None
-            if 'address' in input_page:
-                page_address = input_page['address']
-                page_number = None
-            if 'number' in input_page:
-                page_number = input_page['number']
-
-
-            page = document.page_set.filter(address=page_address)
-            page_setting = None
-            if page.exists():
-                print("page exists {0} {1}").format(page.id, page.address)
-                page = document.page_set.filter(address=page_address).first()
-                page_setting = PageSetting.objects.get(id=page.page_setting_id, customer_id=customer_id)
-            else:
-                print(document_setting.id)
-                print(page_number)
-                print(customer_id)
-                page_setting = PageSetting.objects.get(document_setting_id=document_setting.id, number=1 if page_number is None else page_number, customer_id=customer_id)
-                page = Page(page_setting_id=page_setting.id, document_id=document.id, address=uuid.uuid4() if page_address is None else page_address, number= 1 if page_number is None else page_number, customer_id=customer_id)
-                page.save()
-                print("new page {0} {1}".format(page.id, page.address))
-
-            # Create fields
-            for field_setting in FieldSetting.objects.filter(page_setting_id=page_setting.id, customer_id=customer_id):
-                field = Field(page_id=page.id, field_setting_id=field_setting.id, customer_id=customer_id)
-                field.save()
-
-            # Create strokes
-            for input_stroke in input_page['strokes']:
-                stroke = Stroke(page_id=page.id, customer_id=customer_id)
-                stroke.save()
-                dots_to_insert = []
-                for input_dot in input_stroke['dots']:
-                    dots_to_insert.append(Dot(stroke_id=stroke.id, x=input_dot['x'], y=input_dot['y'], customer_id=customer_id))
-
-                Dot.objects.bulk_create(dots_to_insert)
 
         return document
 
@@ -236,6 +187,40 @@ class Page(models.Model):
                 stroke_data.append({"x": float(dot.x), "y": float(dot.y)})
             strokes_data.append({"dots": stroke_data})
         return strokes_data
+
+
+    @staticmethod
+    def save_page(customer_id, input_page, page_address, document_identifier):
+        page_number = None
+        if 'number' in input_page:
+            page_number = input_page['number']
+
+        documents = Document.objects.filter(identifier=document_identifier, customer_id=customer_id)
+
+        if documents.exists():
+            document = documents.first()
+        else:
+            raise ValueError("Document doesn't exist")
+
+        pages = Page.objects.filter(document_id=document.id, number=page_number, customer_id=customer_id)
+
+        if pages.exists():
+            page = pages.first()
+            print("page exists {0} {1}".format(page.id, page.address))
+            if page_number is not None:
+                page.number = page_number
+            page.save()
+        else:
+            page_setting = PageSetting.objects.get(document_setting_id=document.document_setting_id, number=1 if page_number is None else page_number, customer_id=customer_id)
+            page = Page(page_setting_id=page_setting.id, document_id=document.id, address=uuid.uuid4() if page_address is None else page_address, number= 1 if page_number is None else page_number, customer_id=customer_id)
+            page.save()
+            for field_setting in FieldSetting.objects.filter(page_setting_id=page_setting.id, customer_id=customer_id):
+                field = Field(page_id=page.id, field_setting_id=field_setting.id, customer_id=customer_id)
+                field.save()
+            print("new page {0} {1}".format(page.id, page.address))
+
+        return page
+
 
     def get_myscript_json(self, field, field_setting, recognition_setting):
         strokes_data = []
@@ -313,6 +298,45 @@ class Stroke(models.Model):
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
     class Meta:
         unique_together = ('id', 'customer')
+
+    @staticmethod
+    def save_by_address(address, input_stroke, customer_id):
+        pages = Page.objects.filter(address=address, customer_id=customer_id)
+        if not pages.exists:
+            raise ValueError('Page does not exist')
+
+        page = pages.first()
+        stroke = Stroke(page_id=page.id, customer_id=customer_id)
+        stroke.save()
+        dots_to_insert = []
+        for input_dot in input_stroke['dots']:
+            dots_to_insert.append(Dot(stroke_id=stroke.id, x=input_dot['x'], y=input_dot['y'], customer_id=customer_id))
+
+            Dot.objects.bulk_create(dots_to_insert)
+
+        return stroke
+
+
+    @staticmethod
+    def save_by_document_page(document_identifier, number, input_stroke, customer_id):
+        documents = Document.objects.filter(identifier=document_identifier, customer_id=customer_id)
+        if not documents.exists:
+            raise ValueError('Document does not exist')
+        document = documents.first()
+        pages = Page.objects.filter(document_id=document.id, number=number, customer_id=customer_id)
+        if not pages.exists:
+            raise ValueError('Page does not exist')
+
+        page = pages.first()
+        stroke = Stroke(page_id=page.id, customer_id=customer_id)
+        stroke.save()
+        dots_to_insert = []
+        for input_dot in input_stroke['dots']:
+            dots_to_insert.append(Dot(stroke_id=stroke.id, x=input_dot['x'], y=input_dot['y'], customer_id=customer_id))
+
+            Dot.objects.bulk_create(dots_to_insert)
+
+        return stroke
 
 
 class Dot(models.Model):

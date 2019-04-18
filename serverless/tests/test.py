@@ -1,32 +1,16 @@
-from models import *
-from recognition import Recognition
-from fieldobj import FieldObj
+available_paths = ['documentSetting', 'pageSetting', 'fieldSetting', 'recognitionSetting', 'document', 'page', 'field', 'stroke', 'background']
 
-import database
-
-_field = FieldObj.load(1)
-print _field._id
-print _field.get_recognition()
-
-quit()
+event_path = "/document/123/background/1"
 
 
- 
-from sqlalchemy import create_engine
-engine = create_engine('mysql+mysqlconnector://root:heyheyhey@strokes.cgf0r7uvrbjf.ap-southeast-1.rds.amazonaws.com/strokes')
- 
-from sqlalchemy.orm import sessionmaker
-session = sessionmaker()
-session.configure(bind=engine)
-Base.metadata.create_all(engine)
-s = session()
 
-print s.query(Document).first().id
-print s.query(Page).first().id
-print s.query(Field).first().id
-print s.query(RecognitionResult).first().id
-print s.query(RecognitionCandidate).first().id
-print s.query(Stroke).first().id
-print s.query(Dot).first().id
-
-
+# Get current path
+def get_path(path):
+    for available_path in available_paths:
+        print("checking: {0} for: {1}".format(path, available_path))
+        if path.endswith(available_path):
+            print("found path: {0}".format(available_path))
+            return available_path
+    return get_path(path.rsplit('/',1)[0])
+        
+print(get_path(event_path))
